@@ -4,25 +4,46 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>File Metadata Microservice</title>
-  <link rel="stylesheet" href="style.css" type="text/css">
+  <link rel="stylesheet" href="style.css"> <!-- Link to CSS file -->
 </head>
 <body>
-  <h1>File Metadata Microservice</h1>
-  <form id="uploadForm" enctype="multipart/form-data" method="POST" action="/api/fileanalyse">
-    <input type="file" name="upfile" id="fileInput" required />
-    <button type="submit">Upload File</button>
-  </form>
+  <div class="upload-container">
+    <div class="upload-card">
+      <h1>Upload Your File</h1>
 
-  <div id="result"></div>
+      <!-- Drag & Drop Area -->
+      <div class="drag-drop-area" id="dropArea">
+        <p>Drag & Drop your file here</p>
+        <span>or</span>
+        <!-- Custom File Input -->
+        <label for="fileInput" class="upload-btn">Choose a File</label>
+        <input type="file" name="upfile" id="fileInput" required />
+      </div>
+
+      <button type="submit" class="submit-btn">Upload File</button>
+
+      <!-- Result Section -->
+      <div id="result">
+        <p>File Name: <span id="fileName"></span></p>
+        <p>File Type: <span id="fileType"></span></p>
+        <p>File Size: <span id="fileSize"></span></p>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const form = document.getElementById('uploadForm');
+    const form = document.querySelector('.upload-container');
     const resultDiv = document.getElementById('result');
+    const fileNameSpan = document.getElementById('fileName');
+    const fileTypeSpan = document.getElementById('fileType');
+    const fileSizeSpan = document.getElementById('fileSize');
+    const fileInput = document.getElementById('fileInput');
 
     form.addEventListener('submit', function (event) {
-      event.preventDefault(); // Prevent the form from submitting the default way
+      event.preventDefault();
 
-      const formData = new FormData(form);
+      const formData = new FormData();
+      formData.append('upfile', fileInput.files[0]);
 
       fetch('/api/fileanalyse', {
         method: 'POST',
@@ -30,15 +51,32 @@
       })
       .then(response => response.json())
       .then(data => {
-        resultDiv.innerHTML = `
-          <p>File Name: ${data.name}</p>
-          <p>File Type: ${data.type}</p>
-          <p>File Size: ${data.size} bytes</p>
-        `;
+        fileNameSpan.textContent = data.name;
+        fileTypeSpan.textContent = data.type;
+        fileSizeSpan.textContent = data.size + " bytes";
+
+        resultDiv.style.display = 'block';  // Show result after upload
       })
       .catch(err => {
         resultDiv.innerHTML = '<p>Error uploading file. Please try again.</p>';
       });
+    });
+
+    // Drag & Drop functionality (optional enhancement)
+    const dropArea = document.getElementById('dropArea');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    dropArea.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      fileInput.files = files; // Assign dropped files to input
     });
   </script>
 </body>
