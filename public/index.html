@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Metadata Microservice</title>
+  <link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body>
+  <h1>File Metadata Microservice</h1>
+  <form id="uploadForm" enctype="multipart/form-data" method="POST" action="/api/fileanalyse">
+    <input type="file" name="upfile" id="fileInput" required />
+    <button type="submit">Upload File</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent the form from submitting the default way
+
+      const formData = new FormData(form);
+
+      fetch('/api/fileanalyse', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        resultDiv.innerHTML = `
+          <p>File Name: ${data.name}</p>
+          <p>File Type: ${data.type}</p>
+          <p>File Size: ${data.size} bytes</p>
+        `;
+      })
+      .catch(err => {
+        resultDiv.innerHTML = '<p>Error uploading file. Please try again.</p>';
+      });
+    });
+  </script>
+</body>
+</html>
